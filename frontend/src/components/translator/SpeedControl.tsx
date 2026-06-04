@@ -5,10 +5,10 @@ export function SpeedControl() {
   const { speed, setSpeed } = useTranslatorStore();
 
   return (
-    <div className="panel-section">
-      <div className="panel-label">Speed</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: 'var(--text2)' }}>🐢</span>
+    <section className="px-5 py-5 border-b border-[var(--border)]">
+      <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text2)]">Speed</div>
+      <div className="flex items-center gap-3">
+        <span className="font-mono text-[12px] text-[var(--text2)]">🐢</span>
         <input
           type="range"
           id="speedSlider"
@@ -17,19 +17,10 @@ export function SpeedControl() {
           step={0.1}
           value={speed}
           onChange={(e) => setSpeed(parseFloat(e.target.value))}
-          style={{ flex: 1, accentColor: 'var(--accent)' }}
+          className="flex-1 accent-[var(--accent)]"
         />
-        <span
-          style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 12,
-            color: 'var(--accent2)',
-            minWidth: 36,
-          }}
-        >
-          {speed.toFixed(1)}x
-        </span>
+        <span className="min-w-[36px] font-mono text-[12px] text-[var(--accent2)]">{speed.toFixed(1)}x</span>
       </div>
-    </div>
+    </section>
   );
 }

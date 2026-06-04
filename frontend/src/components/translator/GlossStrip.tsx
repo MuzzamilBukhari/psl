@@ -6,19 +6,23 @@ export function GlossStrip() {
 
   if (tokens.length === 0) {
     return (
-      <div className="panel-section">
-        <div className="panel-label">PSL Gloss Output</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 40 }}>
-          <span style={{ fontSize: 12, color: 'var(--text2)' }}>Gloss tokens appear here...</span>
+      <section className="px-5 py-5 border-b border-[var(--border)]">
+        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text2)]">
+          PSL Gloss Output
         </div>
-      </div>
+        <div className="flex flex-wrap gap-2 min-h-[40px]">
+          <span className="text-xs text-[var(--text2)]">Gloss tokens appear here...</span>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="panel-section">
-      <div className="panel-label">PSL Gloss Output</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 40 }}>
+    <section className="px-5 py-5 border-b border-[var(--border)]">
+      <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text2)]">
+        PSL Gloss Output
+      </div>
+      <div className="flex flex-wrap gap-2 min-h-[40px]">
         {tokens.map((token, i) => {
           const isActive = i === activeTokenIndex;
           const isDone = i < activeTokenIndex;
@@ -27,33 +31,21 @@ export function GlossStrip() {
             <div
               key={`${token}-${i}`}
               id={`gt-${i}`}
-              style={{
-                padding: '6px 12px',
-                background: isActive
-                  ? 'var(--accent)'
-                  : isDone
-                  ? 'rgba(0, 206, 201, 0.15)'
-                  : 'var(--card)',
-                border: '1px solid',
-                borderColor: isActive
-                  ? 'var(--accent)'
-                  : isDone
-                  ? 'var(--accent3)'
-                  : 'var(--border)',
-                borderRadius: 8,
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 12,
-                color: isActive ? '#fff' : isDone ? 'var(--accent3)' : 'var(--text2)',
-                transform: isActive ? 'scale(1.08)' : 'scale(1)',
-                boxShadow: isActive ? '0 4px 16px var(--glow)' : 'none',
-                transition: 'all .3s',
-              }}
+              className={
+                `rounded-[8px] border px-3 py-2 text-[12px] font-mono transition-all duration-300 ${
+                  isActive
+                    ? 'border-[var(--accent)] bg-[var(--accent)] text-white shadow-[0_4px_16px_var(--glow)] scale-105'
+                    : isDone
+                    ? 'border-[var(--accent3)] bg-[rgba(0,206,201,0.15)] text-[var(--accent3)]'
+                    : 'border-[var(--border)] bg-[var(--card)] text-[var(--text2)]'
+                }`
+              }
             >
               {token.replace(/_/g, ' ').toUpperCase()}
             </div>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }

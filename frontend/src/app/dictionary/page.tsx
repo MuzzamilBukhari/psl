@@ -20,7 +20,6 @@ export const dynamic = 'force-dynamic';
 export default async function DictionaryPage() {
   let signs = await api.getSigns().catch(() => []);
 
-  // Group by category
   const grouped = signs.reduce<Record<string, Sign[]>>((acc, sign) => {
     const cat = sign.category ?? 'other';
     if (!acc[cat]) acc[cat] = [];
@@ -29,117 +28,61 @@ export default async function DictionaryPage() {
   }, {});
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '0 0 60px' }}>
-      {/* Header */}
-      <header
-        style={{
-          padding: '16px 32px',
-          borderBottom: '1px solid var(--border)',
-          background: 'rgba(18,18,26,0.8)',
-          backdropFilter: 'blur(20px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-        }}
-      >
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--accent2)' }}>🤟 V2PSL</div>
+    <main className="min-h-screen bg-[var(--bg)] pb-16">
+      <header className="sticky top-0 z-10 flex items-center justify-between px-8 py-4 border-b border-[var(--border)] bg-[rgba(18,18,26,0.8)] backdrop-blur-xl">
+        <Link href="/" className="flex items-center gap-3 no-underline">
+          <div className="text-2xl font-bold text-[var(--accent2)]">🤟 V2PSL</div>
         </Link>
         <Link
           href="/translate"
-          style={{
-            padding: '8px 20px',
-            background: 'linear-gradient(135deg, var(--accent), #8b5cf6)',
-            color: '#fff',
-            borderRadius: 10,
-            fontSize: 13,
-            fontWeight: 600,
-            textDecoration: 'none',
-          }}
+          className="rounded-xl bg-[linear-gradient(135deg,var(--accent),#8b5cf6)] px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
         >
           Open Translator →
         </Link>
       </header>
 
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '40px 24px' }}>
-        <h1 style={{ fontSize: 32, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>
-          PSL Sign Dictionary
-        </h1>
-        <p style={{ color: 'var(--text2)', marginBottom: 40, fontSize: 15 }}>
+      <div className="mx-auto max-w-5xl px-6 py-10">
+        <h1 className="text-3xl font-extrabold text-[var(--text)] mb-2">PSL Sign Dictionary</h1>
+        <p className="text-sm text-[var(--text2)] mb-10">
           {signs.length} signs available — click a sign in the translator to animate it.
         </p>
 
         {Object.entries(grouped).map(([category, catSigns]) => (
-          <div key={category} style={{ marginBottom: 40 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: '50%',
-                  background: CATEGORY_COLORS[category] ?? 'var(--accent)',
-                }}
+          <section key={category} className="mb-10">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span
+                className="inline-block h-2.5 w-2.5 rounded-full"
+                style={{ background: CATEGORY_COLORS[category] ?? 'var(--accent)' }}
               />
-              <h2 style={{ fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--text2)' }}>
+              <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text2)]">
                 {category.replace(/_/g, ' ')} ({catSigns.length})
               </h2>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+            <div className="grid gap-3 sm:grid-cols-2">
               {catSigns.map((sign) => (
                 <div
                   key={sign.key}
-                  style={{
-                    padding: '16px',
-                    background: 'var(--card)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 12,
-                    transition: 'all .2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor =
-                      CATEGORY_COLORS[category] ?? 'var(--accent)';
-                    (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)';
-                    (e.currentTarget as HTMLDivElement).style.transform = 'none';
-                  }}
+                  className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)]"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
-                      {sign.label}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontFamily: "'JetBrains Mono', monospace",
-                        color: 'var(--accent2)',
-                        background: 'rgba(108,92,231,0.1)',
-                        padding: '2px 7px',
-                        borderRadius: 6,
-                      }}
-                    >
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <span className="text-sm font-bold text-[var(--text)]">{sign.label}</span>
+                    <span className="rounded-lg bg-[rgba(108,92,231,0.1)] px-2 py-1 text-[10px] font-mono text-[var(--accent2)]">
                       {sign.key}
                     </span>
                   </div>
                   {sign.description && (
-                    <p style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.5 }}>
-                      {sign.description}
-                    </p>
+                    <p className="text-xs leading-6 text-[var(--text2)]">{sign.description}</p>
                   )}
-                  <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text2)' }}>
+                  <div className="mt-2 text-[11px] text-[var(--text2)]">
                     {sign.keyframes.length} keyframe{sign.keyframes.length !== 1 ? 's' : ''}
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         ))}
       </div>
-    </div>
+    </main>
   );
 }

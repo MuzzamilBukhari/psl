@@ -25,8 +25,10 @@ export function InputPanel() {
   };
 
   return (
-    <div className="panel-section">
-      <div className="panel-label">Input Text</div>
+    <section className="px-5 py-5 border-b border-[var(--border)]">
+      <div className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text2)]">
+        Input Text
+      </div>
 
       <textarea
         id="inputText"
@@ -35,49 +37,21 @@ export function InputPanel() {
         onKeyDown={handleKeyDown}
         placeholder={`Type a sentence in English...\ne.g. "Hello my name is Ahmed"`}
         disabled={isPlaying}
-        style={{
-          width: '100%',
-          height: 120,
-          background: 'var(--card)',
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-          padding: 14,
-          color: 'var(--text)',
-          fontFamily: 'Inter, sans-serif',
-          fontSize: 14,
-          resize: 'none',
-          outline: 'none',
-          transition: 'border .2s',
-        }}
-        onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
-        onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+        className="w-full h-28 rounded-[12px] border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[rgba(108,92,231,0.15)] disabled:cursor-not-allowed disabled:opacity-60 resize-none"
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 12 }}>
-        {/* Voice Button */}
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <button
           id="voiceBtn"
           onClick={toggleVoice}
           disabled={voiceState === 'unsupported' || isPlaying}
-          style={{
-            padding: 14,
-            borderRadius: 12,
-            border: '1px solid',
-            borderColor: voiceState === 'listening' ? 'var(--accent3)' : 'var(--border)',
-            background:
+          className={
+            `rounded-[12px] border px-4 py-3 text-sm font-semibold transition-all duration-200 ${
               voiceState === 'listening'
-                ? 'linear-gradient(135deg, #0984e3, var(--accent3))'
-                : 'var(--card)',
-            color: voiceState === 'listening' ? '#fff' : 'var(--text)',
-            fontFamily: 'Inter, sans-serif',
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: voiceState === 'unsupported' ? 'not-allowed' : 'pointer',
-            opacity: voiceState === 'unsupported' ? 0.5 : 1,
-            boxShadow:
-              voiceState === 'listening' ? '0 8px 24px rgba(0, 206, 201, 0.2)' : 'none',
-            transition: 'all .2s',
-          }}
+                ? 'border-[var(--accent3)] bg-[linear-gradient(135deg,#0984e3,var(--accent3))] text-white shadow-[0_8px_24px_rgba(0,206,201,0.2)]'
+                : 'border-[var(--border)] bg-[var(--card)] text-[var(--text)]'
+            } ${voiceState === 'unsupported' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`
+          }
         >
           {voiceState === 'listening'
             ? '🎙️ Listening...'
@@ -86,72 +60,29 @@ export function InputPanel() {
             : '🎙️ Use Mic'}
         </button>
 
-        {/* Translate Button */}
         <button
           id="translateBtn"
           onClick={handleSubmit}
           disabled={!canSubmit}
-          style={{
-            padding: 14,
-            borderRadius: 12,
-            border: 'none',
-            background:
-              canSubmit
-                ? 'linear-gradient(135deg, var(--accent), #8b5cf6)'
-                : 'rgba(108,92,231,0.3)',
-            color: '#fff',
-            fontFamily: 'Inter, sans-serif',
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: canSubmit ? 'pointer' : 'not-allowed',
-            transition: 'all .2s',
-          }}
-          onMouseEnter={(e) => {
-            if (canSubmit) {
-              (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 24px var(--glow)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = 'none';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-          }}
+          className={`rounded-[12px] px-4 py-3 text-sm font-semibold text-white transition-all duration-200 ${
+            canSubmit
+              ? 'bg-[linear-gradient(135deg,var(--accent),#8b5cf6)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_var(--glow)] cursor-pointer'
+              : 'bg-[rgba(108,92,231,0.3)] cursor-not-allowed'
+          }`}
         >
           {isTranslating ? '⏳ Translating...' : isPlaying ? '🤟 Signing...' : '🤟 Translate to PSL'}
         </button>
       </div>
 
       {!avatarReady && (
-        <div
-          style={{
-            marginTop: 12,
-            padding: '10px 14px',
-            background: 'rgba(108,92,231,0.08)',
-            border: '1px solid rgba(108,92,231,0.2)',
-            borderRadius: 12,
-            fontSize: 12,
-            color: 'var(--text2)',
-          }}
-        >
+        <div className="mt-3 rounded-[12px] border border-[rgba(108,92,231,0.2)] bg-[rgba(108,92,231,0.08)] px-4 py-3 text-xs leading-5 text-[var(--text2)]">
           ⏳ Loading 3D avatar...
         </div>
       )}
 
-      <div
-        style={{
-          marginTop: 12,
-          padding: '12px 14px',
-          background: 'rgba(0, 206, 201, 0.08)',
-          border: '1px solid rgba(0, 206, 201, 0.18)',
-          borderRadius: 12,
-          fontSize: 12,
-          color: 'var(--text2)',
-          lineHeight: 1.5,
-        }}
-      >
-        Prototype mode: common phrases are normalized into a PSL-style gloss set. Unknown
-        words are fingerspelled.
+      <div className="mt-3 rounded-[12px] border border-[rgba(0,206,201,0.18)] bg-[rgba(0,206,201,0.08)] px-4 py-3 text-xs leading-5 text-[var(--text2)]">
+        Prototype mode: common phrases are normalized into a PSL-style gloss set. Unknown words are fingerspelled.
       </div>
-    </div>
+    </section>
   );
 }

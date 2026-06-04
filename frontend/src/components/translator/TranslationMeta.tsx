@@ -10,67 +10,30 @@ export function TranslationMeta() {
     : null;
 
   return (
-    <div className="panel-section">
-      <div className="panel-label">Translation Notes</div>
-      <div
-        style={{
-          padding: 14,
-          background: 'var(--card)',
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-        }}
-      >
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>
-          {hasTranslation ? mode : 'Demo-ready prototype'}
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.5 }}>
+    <section className="px-5 py-5 border-b border-[var(--border)]">
+      <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text2)]">
+        Translation Notes
+      </div>
+      <div className="rounded-[12px] border border-[var(--border)] bg-[var(--card)] p-4">
+        <div className="mb-2 text-sm font-semibold text-[var(--text)]">{hasTranslation ? mode : 'Demo-ready prototype'}</div>
+        <div className="text-xs leading-6 text-[var(--text2)]">
           {hasTranslation
             ? fingerspelledCount > 0
               ? 'Unsupported words are being fingerspelled so the avatar can still complete the sentence.'
               : 'Every output token mapped to a supported prototype sign.'
             : 'Input text is converted into a compact gloss sequence. Unsupported words fall back to fingerspelling.'}
         </div>
-        {allNotes && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-            {allNotes.filter(Boolean).map((note) => (
-              <span
-                key={note}
-                style={{
-                  padding: '5px 9px',
-                  borderRadius: 999,
-                  border: '1px solid var(--border)',
-                  background: 'rgba(108, 92, 231, 0.08)',
-                  color: 'var(--accent2)',
-                  fontSize: 11,
-                  fontFamily: "'JetBrains Mono', monospace",
-                }}
-              >
-                {note}
-              </span>
-            ))}
-          </div>
-        )}
-        {!hasTranslation && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-            {['text-to-gloss', 'IK avatar', 'fingerspell fallback'].map((pill) => (
-              <span
-                key={pill}
-                style={{
-                  padding: '5px 9px',
-                  borderRadius: 999,
-                  border: '1px solid var(--border)',
-                  background: 'rgba(108, 92, 231, 0.08)',
-                  color: 'var(--accent2)',
-                  fontSize: 11,
-                  fontFamily: "'JetBrains Mono', monospace",
-                }}
-              >
-                {pill}
-              </span>
-            ))}
-          </div>
-        )}
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(allNotes ?? ['text-to-gloss', 'IK avatar', 'fingerspell fallback']).filter(Boolean).map((note) => (
+            <span
+              key={note}
+              className="rounded-full border border-[var(--border)] bg-[rgba(108,92,231,0.08)] px-2.5 py-1 text-[11px] font-mono text-[var(--accent2)]"
+            >
+              {note}
+            </span>
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
