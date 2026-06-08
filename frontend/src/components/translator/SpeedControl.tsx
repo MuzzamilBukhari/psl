@@ -1,14 +1,16 @@
-'use client';
-import { useTranslatorStore } from '@/store/translatorStore';
+"use client";
+import { useTranslatorStore } from "@/store/translatorStore";
 
 export function SpeedControl() {
   const { speed, setSpeed } = useTranslatorStore();
 
   return (
-    <section className="px-5 py-5 border-b border-[var(--border)]">
-      <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text2)]">Speed</div>
-      <div className="flex items-center gap-3">
-        <span className="font-mono text-[12px] text-[var(--text2)]">🐢</span>
+    <section className="flex flex-col gap-6 px-6 py-6 border-b border-[var(--border)]">
+      <label className="text-xs md:text-sm font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+        Animation Speed
+      </label>
+      <div className="flex items-center gap-4">
+        <span className="text-xl">🐢</span>
         <input
           type="range"
           id="speedSlider"
@@ -17,9 +19,11 @@ export function SpeedControl() {
           step={0.1}
           value={speed}
           onChange={(e) => setSpeed(parseFloat(e.target.value))}
-          className="flex-1 accent-[var(--accent)]"
+          className="flex-1 accent-[var(--primary)] cursor-pointer"
         />
-        <span className="min-w-[36px] font-mono text-[12px] text-[var(--accent2)]">{speed.toFixed(1)}x</span>
+        <span className="min-w-[44px] text-center font-mono text-sm font-semibold text-[var(--primary-light)]">
+          {speed.toFixed(1)}x
+        </span>
       </div>
     </section>
   );

@@ -1,16 +1,18 @@
-'use client';
-import { useTranslatorStore } from '@/store/translatorStore';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useVoiceInput } from '@/hooks/useVoiceInput';
+"use client";
+import { useTranslatorStore } from "@/store/translatorStore";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
 
 export function InputPanel() {
-  const { inputText, setInputText, status, avatarReady, tokens } = useTranslatorStore();
+  const { inputText, setInputText, status, avatarReady, tokens } =
+    useTranslatorStore();
   const { translate } = useTranslation();
   const { voiceState, toggle: toggleVoice } = useVoiceInput();
 
-  const isPlaying = status === 'signing';
-  const isTranslating = status === 'translating';
-  const canSubmit = !!inputText.trim() && !isPlaying && !isTranslating && avatarReady;
+  const isPlaying = status === "signing";
+  const isTranslating = status === "translating";
+  const canSubmit =
+    !!inputText.trim() && !isPlaying && !isTranslating && avatarReady;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
@@ -18,18 +20,22 @@ export function InputPanel() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
   };
 
   return (
-    <section className="px-5 py-5 border-b border-[var(--border)]">
-      <div className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text2)]">
-        Input Text
+    <section className="flex flex-col gap-6 px-6 py-6 border-b border-[var(--border)]">
+      {/* Label */}
+      <div className="flex flex-col gap-1">
+        <label className="text-xs md:text-sm font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+          Input Text
+        </label>
       </div>
 
+      {/* Textarea */}
       <textarea
         id="inputText"
         value={inputText}
@@ -37,51 +43,56 @@ export function InputPanel() {
         onKeyDown={handleKeyDown}
         placeholder={`Type a sentence in English...\ne.g. "Hello my name is Ahmed"`}
         disabled={isPlaying}
-        className="w-full h-28 rounded-[12px] border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[rgba(108,92,231,0.15)] disabled:cursor-not-allowed disabled:opacity-60 resize-none"
+        className="input-field h-32 resize-none"
       />
 
-      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      {/* Buttons */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <button
           id="voiceBtn"
           onClick={toggleVoice}
-          disabled={voiceState === 'unsupported' || isPlaying}
-          className={
-            `rounded-[12px] border px-4 py-3 text-sm font-semibold transition-all duration-200 ${
-              voiceState === 'listening'
-                ? 'border-[var(--accent3)] bg-[linear-gradient(135deg,#0984e3,var(--accent3))] text-white shadow-[0_8px_24px_rgba(0,206,201,0.2)]'
-                : 'border-[var(--border)] bg-[var(--card)] text-[var(--text)]'
-            } ${voiceState === 'unsupported' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`
-          }
+          disabled={voiceState === "unsupported" || isPlaying}
+          className={`rounded-[var(--radius-lg)] px-4 py-3 text-sm font-semibold border transition-all duration-300 ${
+            voiceState === "listening"
+              ? "border-[var(--accent)] bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)] text-white shadow-[var(--shadow-lg)]"
+              : "border-[var(--border-light)] bg-[var(--card)] text-[var(--text)] hover:border-[var(--primary)] hover:bg-[var(--card-hover)]"
+          } ${voiceState === "unsupported" ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:-translate-y-0.5"}`}
         >
-          {voiceState === 'listening'
-            ? '🎙️ Listening...'
-            : voiceState === 'unsupported'
-            ? 'Mic Unsupported'
-            : '🎙️ Use Mic'}
+          {voiceState === "listening"
+            ? "🎙️ Listening..."
+            : voiceState === "unsupported"
+              ? "🎙️ Unsupported"
+              : "🎙️ Use Mic"}
         </button>
 
         <button
           id="translateBtn"
           onClick={handleSubmit}
           disabled={!canSubmit}
-          className={`rounded-[12px] px-4 py-3 text-sm font-semibold text-white transition-all duration-200 ${
+          className={`rounded-[var(--radius-lg)] px-4 py-3 text-sm font-semibold text-white border transition-all duration-300 ${
             canSubmit
-              ? 'bg-[linear-gradient(135deg,var(--accent),#8b5cf6)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_var(--glow)] cursor-pointer'
-              : 'bg-[rgba(108,92,231,0.3)] cursor-not-allowed'
+              ? "border-[var(--primary)] bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)] cursor-pointer"
+              : "border-[var(--border)] bg-[rgba(99,102,241,0.2)] cursor-not-allowed"
           }`}
         >
-          {isTranslating ? '⏳ Translating...' : isPlaying ? '🤟 Signing...' : '🤟 Translate to PSL'}
+          {isTranslating
+            ? "⏳ Translating..."
+            : isPlaying
+              ? "🤟 Signing..."
+              : "🤟 Translate"}
         </button>
       </div>
 
+      {/* Info Messages */}
       {!avatarReady && (
-        <div className="mt-3 rounded-[12px] border border-[rgba(108,92,231,0.2)] bg-[rgba(108,92,231,0.08)] px-4 py-3 text-xs leading-5 text-[var(--text2)]">
-          ⏳ Loading 3D avatar...
+        <div className="rounded-[var(--radius-lg)] border border-[var(--primary)] bg-[rgba(99,102,241,0.1)] px-4 py-3 text-xs md:text-sm leading-relaxed text-[var(--text-secondary)]">
+          ⏳ Loading 3D avatar model...
         </div>
       )}
 
-      <div className="mt-3 rounded-[12px] border border-[rgba(0,206,201,0.18)] bg-[rgba(0,206,201,0.08)] px-4 py-3 text-xs leading-5 text-[var(--text2)]">
-        Prototype mode: common phrases are normalized into a PSL-style gloss set. Unknown words are fingerspelled.
+      <div className="rounded-[var(--radius-lg)] border border-[var(--accent)] bg-[rgba(6,182,212,0.1)] px-4 py-3 text-xs md:text-sm leading-relaxed text-[var(--text-secondary)]">
+        💡 Common phrases are normalized into PSL gloss. Unknown words are
+        fingerspelled.
       </div>
     </section>
   );
