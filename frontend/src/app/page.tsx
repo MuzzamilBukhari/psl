@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center px-6 py-10 text-center">
-      <section className="flex flex-col items-center gap-20">
+      <section className="flex flex-col items-center" style={{ gap: '2rem' }}>
         <div className="flex items-center gap-4 sm:gap-5">
           <div className="w-14 h-14 rounded-[16px] flex items-center justify-center text-2xl bg-[linear-gradient(135deg,var(--accent),var(--accent3))]">
             🤟
@@ -16,7 +16,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="max-w-3xl">
+        <div className="max-w-3xl flex flex-col gap-15">
           <h2 className="text-4xl sm:text-5xl font-extrabold leading-tight max-w-3xl mx-auto text-[var(--text)]">
             Breaking the{' '}
             <span className="bg-[linear-gradient(135deg,var(--accent2),var(--accent3))] bg-clip-text text-transparent">
@@ -24,7 +24,7 @@ export default function HomePage() {
             </span>{' '}
             in Pakistan
           </h2>
-          <p className="mt-6 text-base sm:text-lg leading-8 text-[var(--text2)] max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg leading-8 text-[var(--text2)] max-w-2xl mx-auto">
             Speak or type in English and  bdf dwatch a real-time 3D avatar translate your words into Pakistani Sign Language using inverse kinematics.
           </p>
         </div>
@@ -44,7 +44,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-3 mt-14">
+        <div className="flex flex-wrap justify-center gap-3">
           {[
             { icon: '🎙️', label: 'Voice Input' },
             { icon: '🧠', label: 'NLP Pipeline' },
