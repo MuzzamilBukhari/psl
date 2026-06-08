@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center px-6 py-10 text-center">
-      <section className="flex flex-col items-center gap-8">
+      <section className="flex flex-col items-center gap-20">
         <div className="flex items-center gap-4 sm:gap-5">
           <div className="w-14 h-14 rounded-[16px] flex items-center justify-center text-2xl bg-[linear-gradient(135deg,var(--accent),var(--accent3))]">
             🤟
@@ -25,7 +25,7 @@ export default function HomePage() {
             in Pakistan
           </h2>
           <p className="mt-6 text-base sm:text-lg leading-8 text-[var(--text2)] max-w-2xl mx-auto">
-            Speak or type in English and watch a real-time 3D avatar translate your words into Pakistani Sign Language using inverse kinematics.
+            Speak or type in English and  bdf dwatch a real-time 3D avatar translate your words into Pakistani Sign Language using inverse kinematics.
           </p>
         </div>
 
