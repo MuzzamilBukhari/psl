@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+
+# Backend venv and local database
+/backend/.venv/
+/backend/dev.db
+
+# VS Code
+.vscode/
+
+# Node
+/frontend/node_modules/
+/frontend/.next/
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
