@@ -1,8 +1,7 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Boolean, Integer, Text, ARRAY, TIMESTAMP, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Boolean, Integer, Text, JSON, TIMESTAMP
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 from app.database import Base
 
@@ -16,7 +15,7 @@ class Sign(Base):
     label: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     category: Mapped[str | None] = mapped_column(String(100))  # greeting, emotion, question, etc.
-    keyframes: Mapped[dict] = mapped_column(JSONB, nullable=False)  # the kf[] array
+    keyframes: Mapped[dict] = mapped_column(JSON, nullable=False)  # the kf[] array
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -45,12 +44,10 @@ class Translation(Base):
     """Log of every translation request."""
     __tablename__ = "translations"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     input_text: Mapped[str] = mapped_column(Text, nullable=False)
-    gloss_tokens: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
+    gloss_tokens: Mapped[list[str]] = mapped_column(JSON, nullable=False)
     mode: Mapped[str | None] = mapped_column(String(100))  # template / lexical
-    notes: Mapped[list[str] | None] = mapped_column(ARRAY(String))
+    notes: Mapped[list[str] | None] = mapped_column(JSON)
     fingerspelled_count: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now())

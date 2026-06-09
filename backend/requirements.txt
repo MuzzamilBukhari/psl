@@ -1,0 +1,6 @@
+uvicorn
+fastapi
+sqlalchemy
+aiosqlite
+pydantic
+pydantic-settings
