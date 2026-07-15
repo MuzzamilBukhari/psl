@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslatorStore } from '@/store/translatorStore';
 
 export type VoiceState = 'idle' | 'listening' | 'unsupported';
@@ -16,9 +16,13 @@ export function useVoiceInput() {
   const { setInputText } = useTranslatorStore();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
-  const [voiceState, setVoiceState] = useState<VoiceState>(() =>
-    getSR() ? 'idle' : 'unsupported'
-  );
+  // Start in 'idle' on both server and client to avoid a hydration
+  // mismatch — actual browser support is detected after mount.
+  const [voiceState, setVoiceState] = useState<VoiceState>('idle');
+
+  useEffect(() => {
+    if (!getSR()) setVoiceState('unsupported');
+  }, []);
 
   const startListening = useCallback(() => {
     const SR = getSR();

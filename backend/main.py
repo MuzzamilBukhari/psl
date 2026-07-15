@@ -22,17 +22,31 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
 
     async with AsyncSessionLocal() as db:
-        # Seed signs
+        # Seed signs (upsert: keep sign rows in sync with seed definitions)
         for sign_data in SEED_SIGNS:
             existing = await db.execute(select(Sign).where(Sign.key == sign_data["key"]))
-            if not existing.scalar_one_or_none():
+            row = existing.scalar_one_or_none()
+            if row is None:
                 db.add(Sign(**sign_data))
+            else:
+                row.label = sign_data["label"]
+                row.description = sign_data["description"]
+                row.category = sign_data["category"]
+                row.keyframes = sign_data["keyframes"]
 
-        # Seed synonyms
+        # Seed synonyms (upsert; also drop synonyms shadowing an actual sign,
+        # e.g. old "my" -> "i" now that "my" is its own sign)
+        sign_keys = {s["key"] for s in SEED_SIGNS}
         for syn_data in SEED_SYNONYMS:
             existing = await db.execute(select(Synonym).where(Synonym.word == syn_data["word"]))
-            if not existing.scalar_one_or_none():
+            row = existing.scalar_one_or_none()
+            if row is None:
                 db.add(Synonym(**syn_data))
+            elif row.maps_to != syn_data["maps_to"]:
+                row.maps_to = syn_data["maps_to"]
+        stale = await db.execute(select(Synonym).where(Synonym.word.in_(sign_keys)))
+        for row in stale.scalars().all():
+            await db.delete(row)
 
         # Seed stop words
         for word in SEED_STOP_WORDS:

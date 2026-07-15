@@ -37,6 +37,8 @@ export interface Keyframe {
   d: number;
   rh?: [string, [number, number, number]]; // [landmark, [x,y,z]]
   lh?: [string, [number, number, number]];
+  rhs?: string; // right-hand handshape name (see handshapes.ts)
+  lhs?: string; // left-hand handshape name
   headX?: number;
   headY?: number;
 }

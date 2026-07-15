@@ -11,8 +11,15 @@ import {
   ArmData,
   easeIO,
   resolveTarget,
-  getAlphaTarget,
 } from '@/lib/ikSolver';
+import {
+  HANDSHAPES,
+  ALPHA_SHAPES,
+  CurlAxisInfo,
+  detectCurlAxis,
+  applyFingerCurls,
+  shapeToCurlTargets,
+} from '@/lib/handshapes';
 import type { Sign, Keyframe } from '@/lib/api';
 
 const AVATAR_PATH = '/avatar.glb';
@@ -73,6 +80,13 @@ export function AvatarModel() {
   const pendingTokensRef = useRef<string[]>([]);
   const pendingSignsRef = useRef<Sign[]>([]);
   const dirtyBonesRef = useRef(new Set<string>());
+
+  // Handshape state: detected curl axes + current per-bone curl amounts
+  const curlAxisRef = useRef<{ Right: CurlAxisInfo; Left: CurlAxisInfo }>({
+    Right: { axis: new THREE.Vector3(0, 0, 1), thumbAxis: new THREE.Vector3(0, 0, 1) },
+    Left: { axis: new THREE.Vector3(0, 0, -1), thumbAxis: new THREE.Vector3(0, 0, -1) },
+  });
+  const fingerCurlsRef = useRef<Record<string, number>>({});
 
   // Store access
   const { tokens, signs, speed, status, setAvatarReady, setStatus, setActiveTokenIndex } =
@@ -158,8 +172,36 @@ export function AvatarModel() {
       left: measureArm('Left'),
     };
 
+    // Detect finger curl axes (rig-dependent) and start from the rest shape
+    curlAxisRef.current = {
+      Right: detectCurlAxis('Right', bones, restPose),
+      Left: detectCurlAxis('Left', bones, restPose),
+    };
+    const initialCurls: Record<string, number> = {
+      ...shapeToCurlTargets('Right', HANDSHAPES.rest),
+      ...shapeToCurlTargets('Left', HANDSHAPES.rest),
+    };
+    fingerCurlsRef.current = initialCurls;
+    applyFingerCurls('Right', initialCurls, bones, restPose, curlAxisRef.current.Right);
+    applyFingerCurls('Left', initialCurls, bones, restPose, curlAxisRef.current.Left);
+
     setAvatarReady(true);
-    console.log('[AvatarModel] Ready. Bones:', Object.keys(bones).length);
+    console.log(
+      '[AvatarModel] Ready. Bones:',
+      Object.keys(bones).length,
+      'curl axes:',
+      curlAxisRef.current.Right.axis.toArray(),
+      curlAxisRef.current.Left.axis.toArray()
+    );
+
+    // Dev-only inspection hook (used for debugging/verification)
+    if (process.env.NODE_ENV !== 'production') {
+      (window as unknown as Record<string, unknown>).__V2PSL_DEBUG = {
+        bones,
+        curls: fingerCurlsRef.current,
+        curlAxes: curlAxisRef.current,
+      };
+    }
   }, [scene, setAvatarReady]);
 
   // ── Watch token changes → trigger sign sequence ─────────────────────────────
@@ -179,11 +221,42 @@ export function AvatarModel() {
     return getWorldPos(hand);
   }, []);
 
+  /** Lerp one hand's finger curls toward a named handshape at progress t. */
+  const lerpHandshape = useCallback(
+    (
+      side: 'Right' | 'Left',
+      startCurls: Record<string, number>,
+      targets: Record<string, number>,
+      t: number
+    ) => {
+      for (const [name, target] of Object.entries(targets)) {
+        const start = startCurls[name] ?? 0;
+        fingerCurlsRef.current[name] = start + (target - start) * t;
+      }
+      applyFingerCurls(
+        side,
+        fingerCurlsRef.current,
+        bonesRef.current,
+        restPoseRef.current,
+        curlAxisRef.current[side]
+      );
+      dirtyBonesRef.current.add(side);
+    },
+    []
+  );
+
   const animateKeyframe = useCallback(
     (kf: Keyframe, spd: number): Promise<void> => {
       const duration = kf.d / spd;
       const startRH = kf.rh ? getCurrentHandPos('Right') : null;
       const startLH = kf.lh ? getCurrentHandPos('Left') : null;
+
+      // Handshape targets (optional per keyframe)
+      const startCurls = { ...fingerCurlsRef.current };
+      const rhShape = kf.rhs ? HANDSHAPES[kf.rhs] : null;
+      const lhShape = kf.lhs ? HANDSHAPES[kf.lhs] : null;
+      const rhCurlTargets = rhShape ? shapeToCurlTargets('Right', rhShape) : null;
+      const lhCurlTargets = lhShape ? shapeToCurlTargets('Left', lhShape) : null;
 
       const startHeadX =
         kf.headX !== undefined && bonesRef.current['Head']
@@ -213,6 +286,9 @@ export function AvatarModel() {
             dirtyBonesRef.current.add('Left');
           }
 
+          if (rhCurlTargets) lerpHandshape('Right', startCurls, rhCurlTargets, t);
+          if (lhCurlTargets) lerpHandshape('Left', startCurls, lhCurlTargets, t);
+
           const headBone = bonesRef.current['Head'];
           const headRest = restPoseRef.current['Head'];
           if (kf.headX !== undefined && headBone && headRest) {
@@ -238,7 +314,7 @@ export function AvatarModel() {
         requestAnimationFrame(step);
       });
     },
-    [getCurrentHandPos]
+    [getCurrentHandPos, lerpHandshape]
   );
 
   const animateToRest = useCallback((duration: number): Promise<void> => {
@@ -264,9 +340,19 @@ export function AvatarModel() {
         }
       }
     });
+    // Relax fingers of any dirty hand back to the neutral rest shape
+    const handSides = (['Right', 'Left'] as const).filter((s) =>
+      dirtyBonesRef.current.has(s)
+    );
+    const startCurls = { ...fingerCurlsRef.current };
+    const restCurlTargets: Partial<Record<'Right' | 'Left', Record<string, number>>> = {};
+    for (const s of handSides) {
+      restCurlTargets[s] = shapeToCurlTargets(s, HANDSHAPES.rest);
+    }
+
     dirtyBonesRef.current.clear();
 
-    if (allDirty.size === 0) return Promise.resolve();
+    if (allDirty.size === 0 && handSides.length === 0) return Promise.resolve();
 
     const t0 = performance.now();
     return new Promise<void>((resolve) => {
@@ -278,37 +364,76 @@ export function AvatarModel() {
             bonesRef.current[name].quaternion.copy(startQ[name]).slerp(targetQ[name], t);
           }
         }
+        for (const s of handSides) {
+          lerpHandshape(s, startCurls, restCurlTargets[s]!, t);
+        }
         if (t < 1) requestAnimationFrame(step);
         else resolve();
       };
       requestAnimationFrame(step);
     });
-  }, []);
+  }, [lerpHandshape]);
 
   const fingerspell = useCallback(
     async (word: string, idx: number, spd: number) => {
       setActiveTokenIndex(idx);
-      for (const ch of word.toLowerCase()) {
-        if (ch < 'a' || ch > 'z') continue;
-        const target = getAlphaTarget(ch, lmRef.current);
+      const letters = [...word.toLowerCase()].filter((c) => c >= 'a' && c <= 'z');
+      if (!letters.length) return;
+
+      // Fingerspelling position: hand raised beside the right shoulder,
+      // slightly forward — where a signer actually holds it.
+      const lm = lmRef.current;
+      const spellPos = lm.rShoulder
+        .clone()
+        .add(new THREE.Vector3(-0.12, 0.18, 0.28));
+
+      // Raise the hand into position first
+      {
         const startPos = getCurrentHandPos('Right');
         const t0 = performance.now();
-        const dur = 220 / spd;
+        const dur = 350 / spd;
         await new Promise<void>((resolve) => {
           const step = (now: number) => {
             let t = Math.min((now - t0) / dur, 1);
             t = easeIO(t);
-            applyArmIK('Right', startPos.clone().lerp(target, t), bonesRef.current, restPoseRef.current, lmRef.current, armDataRef.current);
+            applyArmIK('Right', startPos.clone().lerp(spellPos, t), bonesRef.current, restPoseRef.current, lmRef.current, armDataRef.current);
             dirtyBonesRef.current.add('Right');
             if (t < 1) requestAnimationFrame(step);
             else resolve();
           };
           requestAnimationFrame(step);
         });
-        await delay(80 / spd);
+      }
+
+      // Form each letter's handshape, with a tiny bounce so repeated
+      // letters read as separate.
+      for (let li = 0; li < letters.length; li++) {
+        const shape = ALPHA_SHAPES[letters[li]];
+        if (!shape) continue;
+        const targets = shapeToCurlTargets('Right', shape);
+        const startCurls = { ...fingerCurlsRef.current };
+        const bounce = li > 0 && letters[li] === letters[li - 1] ? 0.04 : 0.015;
+        const basePos = getCurrentHandPos('Right');
+        const t0 = performance.now();
+        const dur = 200 / spd;
+        await new Promise<void>((resolve) => {
+          const step = (now: number) => {
+            let t = Math.min((now - t0) / dur, 1);
+            t = easeIO(t);
+            lerpHandshape('Right', startCurls, targets, t);
+            // small vertical dip-and-return so letter changes are visible
+            const dip = Math.sin(t * Math.PI) * bounce;
+            applyArmIK('Right', basePos.clone().add(new THREE.Vector3(0, -dip, 0)), bonesRef.current, restPoseRef.current, lmRef.current, armDataRef.current);
+            dirtyBonesRef.current.add('Right');
+            if (t < 1) requestAnimationFrame(step);
+            else resolve();
+          };
+          requestAnimationFrame(step);
+        });
+        await delay(140 / spd);
       }
     },
-    [getCurrentHandPos, setActiveTokenIndex]
+    [getCurrentHandPos, setActiveTokenIndex, lerpHandshape]
   );
 
   const playSequence = useCallback(async () => {
